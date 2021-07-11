@@ -107,7 +107,7 @@ services:
     # Disable MongoDB logs:
     command: mongod --logpath /dev/null --oplogSize 128 --quiet
     networks:
-      - wekan-tier
+      - nginx-proxy
     expose:
       - 27017
     volumes:
@@ -127,7 +127,9 @@ services:
     container_name: wekan-app
     restart: always
     networks:
-      - wekan-tier
+      - nginx-proxy
+    expose:
+      - 80  
     #-------------------------------------------------------------------------------------
     # ==== BUILD wekan-app DOCKER CONTAINER FROM SOURCE, if you uncomment these ====
     # ==== and use commands: docker-compose up -d --build
@@ -142,6 +144,8 @@ services:
       # remove port mapping if you use nginx reverse proxy, port 8080 is already exposed to wekan-tier network
       - 80:8080
     environment:
+      - VIRTUAL_HOST: board.mindset.cafe
+      - LETSENCRYPT_HOST: board.mindset.cafe
       - MONGO_URL=mongodb://wekandb:27017/wekan
       #---------------------------------------------------------------
       # ==== ROOT_URL SETTING ====
@@ -155,7 +159,7 @@ services:
       #  - http://example.com
       #  - http://boards.example.com
       #  - http://192.168.1.100    <=== using at local LAN
-      - ROOT_URL=http://localhost  #   <=== using only at same laptop/desktop where Wekan is installed
+      - ROOT_URL=http://board.mindset.cafe  #   <=== using only at same laptop/desktop where Wekan is installed
       #---------------------------------------------------------------
       # ==== EMAIL SETTINGS ====
       # Email settings are required in both MAIL_URL and Admin Panel,
@@ -165,7 +169,7 @@ services:
       #       You can encode those characters for example at: https://www.urlencoder.org
       #- MAIL_URL=smtp://user:pass@mailserver.example.com:25/
       - MAIL_URL=smtp://<mail_url>:25/?ignoreTLS=true&tls={rejectUnauthorized:false}
-      - MAIL_FROM=Wekan Notifications <noreply.wekan@mydomain.com>
+      - MAIL_FROM=Wekan Notifications <admin@mindset.cafe>
       #---------------------------------------------------------------
       # ==== OPTIONAL: MONGO OPLOG SETTINGS =====
       # https://github.com/wekan/wekan-mongodb/issues/2#issuecomment-378343587
@@ -680,5 +684,5 @@ volumes:
     driver: local
 
 networks:
-  wekan-tier:
+  nginx-proxy:
     driver: bridge
